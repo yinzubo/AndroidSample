@@ -24,9 +24,11 @@ import com.bitech.androidsample.utils.slidr.SlidrUtil;
  * @author Lucy
  */
 
-public abstract class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity<T extends BasePresenter> extends AppCompatActivity implements BaseView{
 
     public static final Logger logger = Logger.getLogger();
+
+    protected T presenter;//
 
     private int contentViewId;
     private boolean isSlidr;//是否开启滑动关闭
@@ -36,8 +38,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     private int toolBarIndicator;
 
     @Override
-    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         AppManager.getInstance().addActivity(this);
 
         if (getClass().isAnnotationPresent(ActivityInject.class)) {
@@ -57,6 +59,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
 
+        logger.i("设置contentViewId:"+contentViewId);
         setContentView(contentViewId);
         //初始化toolbar
         initToolbar();
@@ -128,5 +131,36 @@ public abstract class BaseActivity extends AppCompatActivity {
             intent.putExtras(bundle);
         }
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(presenter!=null){
+            presenter.onResume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(presenter!=null){
+            presenter.onDestory();//逻辑层中的销毁，例如网络请求以及数据库的访问等
+        }
+    }
+
+    @Override
+    public void toast(String msg) {
+
+    }
+
+    @Override
+    public void showProgress() {
+
+    }
+
+    @Override
+    public void hideProgess() {
+
     }
 }
