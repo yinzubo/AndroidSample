@@ -9,10 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 
+import com.bitech.androidsample.ActivityComponent;
+import com.bitech.androidsample.ActivityModule;
 import com.bitech.androidsample.BuildConfig;
+import com.bitech.androidsample.DaggerActivityComponent;
 import com.bitech.androidsample.R;
 
 import com.bitech.androidsample.annotation.ActivityInject;
+import com.bitech.androidsample.app.App;
 import com.bitech.androidsample.app.AppManager;
 import com.bitech.androidsample.utils.Logger;
 import com.bitech.androidsample.utils.slidr.SlidrUtil;
@@ -24,11 +28,11 @@ import com.bitech.androidsample.utils.slidr.SlidrUtil;
  * @author Lucy
  */
 
-public abstract class BaseActivity<T extends BasePresenter> extends AppCompatActivity implements BaseView{
+public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
     public static final Logger logger = Logger.getLogger();
 
-    protected T presenter;//
+   // protected T presenter;//
 
     private int contentViewId;
     private boolean isSlidr;//是否开启滑动关闭
@@ -59,7 +63,7 @@ public abstract class BaseActivity<T extends BasePresenter> extends AppCompatAct
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
 
-        logger.i("设置contentViewId:"+contentViewId);
+        logger.i("设置contentViewId:" + contentViewId);
         setContentView(contentViewId);
         //初始化toolbar
         initToolbar();
@@ -133,10 +137,10 @@ public abstract class BaseActivity<T extends BasePresenter> extends AppCompatAct
         startActivity(intent);
     }
 
-    @Override
+/*   @Override
     protected void onResume() {
         super.onResume();
-        if(presenter!=null){
+        if (presenter != null) {
             presenter.onResume();
         }
     }
@@ -144,10 +148,10 @@ public abstract class BaseActivity<T extends BasePresenter> extends AppCompatAct
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(presenter!=null){
+        if (presenter != null) {
             presenter.onDestory();//逻辑层中的销毁，例如网络请求以及数据库的访问等
         }
-    }
+    }*/
 
     @Override
     public void toast(String msg) {
@@ -162,5 +166,13 @@ public abstract class BaseActivity<T extends BasePresenter> extends AppCompatAct
     @Override
     public void hideProgess() {
 
+    }
+
+    //使用Dagger2的设置
+    protected ActivityComponent getActivityComponent() {
+        return DaggerActivityComponent.builder()
+                .activityModule(new ActivityModule(this))
+                .appComponent(App.getAppComponent())
+                .build();
     }
 }

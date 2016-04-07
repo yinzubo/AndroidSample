@@ -2,12 +2,19 @@ package com.bitech.androidsample.http.manager;
 
 import com.bitech.androidsample.app.App;
 import com.bitech.androidsample.bean.User;
+import com.bitech.androidsample.http.server.Server;
 import com.bitech.androidsample.http.service.Service;
 import com.bitech.androidsample.utils.NetUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import okhttp3.Cache;
 import okhttp3.CacheControl;
@@ -15,8 +22,12 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import retrofit2.CallAdapter;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -45,35 +56,45 @@ public class RetrofitManager {
     }
 
     //初始化
-    private RetrofitManager() {
+    @Inject
+    public RetrofitManager() {
 
         initOkHttpClient();
         //使用Okhttp 以及rxjava做回调
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getHost()).client(okHttpClient)
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create()).build();
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
         //实例化Service对象
         service = retrofit.create(Service.class);
     }
 
     //初始化OkhttpClient
-    private void initOkHttpClient() {
+    private void initOkHttpClient()  {
 
         if (okHttpClient == null) {
             synchronized (RetrofitManager.class) {
-                File fileCache = new File(App.getContent().getCacheDir(), "httpCache");
+                File fileCache = new File(App.getContext().getCacheDir(), "httpCache");
+                if(fileCache.exists()){
+                    try {
+                        fileCache.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 Cache cache = new Cache(fileCache, 1024 * 1024 * 100);
-
+                //添加或者更改Header头信息
                 Interceptor rewriteCacheControlInterceptor = new Interceptor() {
                     @Override
                     public Response intercept(Chain chain) throws IOException {
                         Request request = chain.request();
                         //无网络连接
-                        if (!NetUtil.isConnected(App.getContent())) {
+                        if (!NetUtil.isConnected(App.getContext())) {
                             request = request.newBuilder().cacheControl(CacheControl.FORCE_CACHE).build();
                         }
 
                         Response response = chain.proceed(request);
-                        if (NetUtil.isConnected(App.getContent())) {
+                        if (NetUtil.isConnected(App.getContext())) {
                             //有网络时
                             String cacheControl = request.cacheControl().toString();
                             return response.newBuilder().header("Cache-Control", cacheControl).removeHeader("Prama").build();
@@ -85,7 +106,8 @@ public class RetrofitManager {
                     }
                 };
 
-                okHttpClient=new OkHttpClient.Builder().cache(cache)
+                okHttpClient = new OkHttpClient.Builder()
+                        .cache(cache)
                         .addNetworkInterceptor(rewriteCacheControlInterceptor)
                         .addInterceptor(rewriteCacheControlInterceptor)
                         .connectTimeout(30, TimeUnit.SECONDS).build();
@@ -93,18 +115,22 @@ public class RetrofitManager {
         }
     }
 
+    //基础Url
     private String getHost() {
-
-        return "";
+        return Server.BASE_URL;
     }
 
-    public Observable<User> login(String name,String password){
-        return service.login(name,password).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).unsubscribeOn(Schedulers.io());
+    public Observable<User> login(String name, String password) {
+
+        Map<String, String> options = new HashMap<>();
+        options.put("cmd", "LoginCheck");
+        options.put("DeviceType", "3");
+        options.put("DeviceToken", "");
+
+        return service.login(name, password, options);
     }
 
-    public Observable<User> update(User user){
-        return service.update(user).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).unsubscribeOn(Schedulers.io());
+    public Observable<User> update(User user) {
+        return service.update(user);
     }
 }

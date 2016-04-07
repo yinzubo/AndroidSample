@@ -15,10 +15,10 @@ public class BasePresenterImpl<T extends BaseView, V> implements BasePresenter, 
     protected T baseView;
     protected Subscription subscription;
 
-    public BasePresenterImpl(T baseView) {
-        this.baseView = baseView;
+    //关联View
+    public  void attacthView(T baseView){
+        this.baseView=baseView;
     }
-
     @Override
     public void beforeRequest() {
 

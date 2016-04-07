@@ -16,7 +16,7 @@ public class SpUtil {
     private static final String SHARED_PREFERENCES_NAME="APP";
 
     public static SharedPreferences getSharedPrefences(){
-     return App.getContent().getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+     return App.getContext().getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     public static String getString(String key){

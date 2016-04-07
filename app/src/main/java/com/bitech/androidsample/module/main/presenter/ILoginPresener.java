@@ -8,4 +8,5 @@ package com.bitech.androidsample.module.main.presenter;
  */
 public interface ILoginPresener {
 
+    void login(String name,String password);
 }

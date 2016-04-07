@@ -8,5 +8,6 @@ package com.bitech.androidsample.http.server;
  */
 public class Server {
 
-
+    //接口访问地址
+    public static final String BASE_URL="http://demo.bitech.cn/appservicezjgkoa/Service/";
 }

@@ -3,6 +3,9 @@ package com.bitech.androidsample.module.main.model;
 import com.bitech.androidsample.bean.User;
 import com.bitech.androidsample.callback.RequestCallback;
 import com.bitech.androidsample.http.manager.RetrofitManager;
+import com.bitech.androidsample.module.main.presenter.LoginPresenerImpl;
+
+import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -12,16 +15,23 @@ import rx.functions.Action0;
 import rx.schedulers.Schedulers;
 
 /**
- * <p></p>
+ * <p>使用RxJava来异步操作网络访问</p>
  * Created on 2016/4/6 16:42.
  *
  * @author Lucy
  */
 public class LoginInterceptorImpl implements ILoginInterceptor<User>{
 
+
+    private RetrofitManager retrofitManager;
+
+    public LoginInterceptorImpl(){
+        this.retrofitManager=RetrofitManager.builder();
+    }
     @Override
     public Subscription login(String name, String password, final RequestCallback<User> callback) {
-        return RetrofitManager.builder().login(name,password).doOnSubscribe(new Action0() {
+
+        return retrofitManager.login(name,password).doOnSubscribe(new Action0() {
             @Override
             public void call() {
                 callback.beforeRequest();

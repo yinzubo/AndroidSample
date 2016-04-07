@@ -2,10 +2,13 @@ package com.bitech.androidsample.http.service;
 
 import com.bitech.androidsample.bean.User;
 
+import java.util.Map;
+
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
 import rx.Observable;
 
 /**
@@ -16,8 +19,8 @@ import rx.Observable;
  */
 public interface Service {
 
-    @GET("/login")
-    Observable<User> login(@Query("name")String name,@Query("password")String password);
+    @GET("/User.ashx")
+    Observable<User> login(@Query("name")String name, @Query("password")String password,@QueryMap Map<String ,String> options);
 
     @POST("/update")
     Observable<User> update(@Body User user);

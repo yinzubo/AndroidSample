@@ -2,8 +2,11 @@ package com.bitech.androidsample.module.main.presenter;
 
 import com.bitech.androidsample.base.BasePresenterImpl;
 import com.bitech.androidsample.bean.User;
+import com.bitech.androidsample.http.manager.RetrofitManager;
 import com.bitech.androidsample.module.main.model.LoginInterceptorImpl;
 import com.bitech.androidsample.module.main.view.ILoginView;
+
+import javax.inject.Inject;
 
 /**
  * <p>实现类
@@ -18,10 +21,12 @@ import com.bitech.androidsample.module.main.view.ILoginView;
  *
  * @author Lucy
  */
-public class LoginPresenerImpl extends BasePresenterImpl<ILoginView, User>  {
+public class LoginPresenerImpl extends BasePresenterImpl<ILoginView, User> implements ILoginPresener{
 
-    public LoginPresenerImpl(ILoginView view) {
-        super(view);
+    private RetrofitManager retrofitManager;
+    @Inject
+    public LoginPresenerImpl() {
+
     }
 
     public void login(String name, String password) {
@@ -32,12 +37,16 @@ public class LoginPresenerImpl extends BasePresenterImpl<ILoginView, User>  {
     @Override
     public void requestSucess(User data) {
         super.requestSucess(data);
-        baseView.login(true);
+        if(baseView!=null) {
+            baseView.login(true);
+        }
     }
 
     @Override
     public void requestError(String msg) {
         super.requestError(msg);
-        baseView.login(false);
+        if(baseView!=null) {
+            baseView.login(false);
+        }
     }
 }
