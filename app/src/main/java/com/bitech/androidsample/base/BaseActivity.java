@@ -7,6 +7,7 @@ import android.os.StrictMode;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.bitech.androidsample.ActivityComponent;
@@ -21,6 +22,10 @@ import com.bitech.androidsample.app.AppManager;
 import com.bitech.androidsample.utils.Logger;
 import com.bitech.androidsample.utils.slidr.SlidrUtil;
 
+import javax.inject.Inject;
+
+import butterknife.ButterKnife;
+
 /**
  * <p></p>
  * Created on 2016/4/5 13:47.
@@ -30,9 +35,7 @@ import com.bitech.androidsample.utils.slidr.SlidrUtil;
 
 public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
-    public static final Logger logger = Logger.getLogger();
-
-   // protected T presenter;//
+    public static final Logger logger= Logger.getLogger();
 
     private int contentViewId;
     private boolean isSlidr;//是否开启滑动关闭
@@ -45,6 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppManager.getInstance().addActivity(this);
+        App.getRefWatcher().watch(this);//监测Activity运行时是否发生内存泄漏
 
         if (getClass().isAnnotationPresent(ActivityInject.class)) {
             ActivityInject annotation = getClass().getAnnotation(ActivityInject.class);
@@ -58,13 +62,14 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         }
 
         //是否开启苛责模式
-        if (BuildConfig.DEBUG) {
+/*        if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
-        }
+        }*/
 
         logger.i("设置contentViewId:" + contentViewId);
         setContentView(contentViewId);
+        ButterKnife.bind(this);
         //初始化toolbar
         initToolbar();
         if (isSlidr) {
@@ -136,22 +141,6 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         }
         startActivity(intent);
     }
-
-/*   @Override
-    protected void onResume() {
-        super.onResume();
-        if (presenter != null) {
-            presenter.onResume();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (presenter != null) {
-            presenter.onDestory();//逻辑层中的销毁，例如网络请求以及数据库的访问等
-        }
-    }*/
 
     @Override
     public void toast(String msg) {

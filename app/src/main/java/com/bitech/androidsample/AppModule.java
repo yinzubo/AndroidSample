@@ -1,9 +1,14 @@
 package com.bitech.androidsample;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.bitech.androidsample.app.App;
 import com.bitech.androidsample.http.manager.RetrofitManager;
+import com.bitech.androidsample.http.service.Service;
+import com.bitech.androidsample.utils.Logger;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -24,12 +29,15 @@ public class AppModule {
     }
 
     @Provides
+    @Singleton
     Context providerContext(){
         return app;
     }
 
     @Provides
-    RetrofitManager providerRetrofitManager(){
-        return new RetrofitManager();
+    @Singleton
+    Service providerApiService(RetrofitManager retrofitManager){
+        return retrofitManager.getService();
     }
+
 }

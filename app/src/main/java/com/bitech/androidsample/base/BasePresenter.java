@@ -1,15 +1,19 @@
 package com.bitech.androidsample.base;
 
+import rx.Subscription;
+
 /**
  * <p></p>
- * Created on 2016/4/6 16:26.
+ * Created on 2016/4/6 16:27.
  *
  * @author Lucy
  */
-public interface BasePresenter {
+public class BasePresenter<T extends BaseView, V> {
 
-    //逻辑层中的暂停
-    void  onResume();
-    //销毁
-    void onDestory();
+    protected T baseView;
+    //关联View
+    public  void attacthView(T baseView){
+        this.baseView=baseView;
+    }
+
 }

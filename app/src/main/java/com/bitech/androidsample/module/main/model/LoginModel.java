@@ -1,13 +1,11 @@
 package com.bitech.androidsample.module.main.model;
 
 import com.bitech.androidsample.bean.User;
-import com.bitech.androidsample.callback.RequestCallback;
-import com.bitech.androidsample.http.manager.RetrofitManager;
-import com.bitech.androidsample.module.main.presenter.LoginPresenerImpl;
+import com.bitech.androidsample.callback.IRequestCallback;
+import com.bitech.androidsample.http.service.Service;
 
 import javax.inject.Inject;
 
-import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -20,18 +18,19 @@ import rx.schedulers.Schedulers;
  *
  * @author Lucy
  */
-public class LoginInterceptorImpl implements ILoginInterceptor<User>{
+public class LoginModel {
 
 
-    private RetrofitManager retrofitManager;
+    private Service apiService;
 
-    public LoginInterceptorImpl(){
-        this.retrofitManager=RetrofitManager.builder();
+    @Inject
+    public LoginModel(Service apiService) {
+        this.apiService = apiService;
     }
-    @Override
-    public Subscription login(String name, String password, final RequestCallback<User> callback) {
 
-        return retrofitManager.login(name,password).doOnSubscribe(new Action0() {
+    public void login(String name, String password, final IRequestCallback<User> callback) {
+
+        apiService.login(name, password).doOnSubscribe(new Action0() {
             @Override
             public void call() {
                 callback.beforeRequest();
@@ -53,6 +52,6 @@ public class LoginInterceptorImpl implements ILoginInterceptor<User>{
                     public void onNext(User user) {
                         callback.requestSucess(user);
                     }
-                });
+                }).unsubscribe();
     }
 }

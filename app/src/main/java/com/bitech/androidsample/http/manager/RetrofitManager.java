@@ -1,17 +1,13 @@
 package com.bitech.androidsample.http.manager;
 
 import com.bitech.androidsample.app.App;
-import com.bitech.androidsample.bean.User;
+import com.bitech.androidsample.http.Interceptor.HttpLoggingInterceptor;
 import com.bitech.androidsample.http.server.Server;
 import com.bitech.androidsample.http.service.Service;
+import com.bitech.androidsample.utils.Logger;
 import com.bitech.androidsample.utils.NetUtil;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -22,15 +18,9 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import retrofit2.CallAdapter;
-import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * <p>网络请求的管理类</p>
@@ -39,6 +29,8 @@ import rx.schedulers.Schedulers;
  * @author Lucy
  */
 public class RetrofitManager {
+
+    public static final Logger logger=Logger.getLogger();
 
     //缓存的有效期
     public static final long CACHE_STALE_ESC = 60 * 60 * 24 * 2;
@@ -62,55 +54,61 @@ public class RetrofitManager {
         initOkHttpClient();
         //使用Okhttp 以及rxjava做回调
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getHost()).client(okHttpClient)
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
-                .build();
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create()).build();
         //实例化Service对象
         service = retrofit.create(Service.class);
     }
 
+    public Service getService(){
+        return service;
+    }
+
+
     //初始化OkhttpClient
     private void initOkHttpClient()  {
-
         if (okHttpClient == null) {
             synchronized (RetrofitManager.class) {
-                File fileCache = new File(App.getContext().getCacheDir(), "httpCache");
-                if(fileCache.exists()){
-                    try {
-                        fileCache.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                if (okHttpClient == null) {
+                    logger.e("初始化mOkHttpClient");
+                    // 因为BaseUrl不同所以这里Retrofit不为静态，但是OkHttpClient配置是一样的,静态创建一次即可
+                    File cacheFile = new File(App.getContext().getCacheDir(),
+                            "HttpCache"); // 指定缓存路径
+                    Cache cache = new Cache(cacheFile, 1024 * 1024 * 100); // 指定缓存大小100Mb
+                    // 云端响应头拦截器，用来配置缓存策略
+                    Interceptor rewriteCacheControlInterceptor = new Interceptor() {
+                        @Override
+                        public Response intercept(Chain chain) throws IOException {
+                            Request request = chain.request();
+                            if (!NetUtil.isConnected(App.getContext())) {
+                                request = request.newBuilder()
+                                        .cacheControl(CacheControl.FORCE_CACHE).build();
+                                logger.e("no network");
+                            }
+                            Response originalResponse = chain.proceed(request);
+                            if (NetUtil.isConnected(App.getContext())) {
+                                //有网的时候读接口上的@Headers里的配置，你可以在这里进行统一的设置
+                                String cacheControl = request.cacheControl().toString();
+                                return originalResponse.newBuilder()
+                                        .header("Cache-Control", cacheControl)
+                                        .removeHeader("Pragma").build();
+                            } else {
+                                return originalResponse.newBuilder().header("Cache-Control",
+                                        "public, only-if-cached," + CACHE_STALE_ESC)
+                                        .removeHeader("Pragma").build();
+                            }
+                        }
+                    };
+                    HttpLoggingInterceptor httpLoggingInterceptor=new HttpLoggingInterceptor();
+                    httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+                    okHttpClient = new OkHttpClient.Builder().cache(cache)
+                            .addNetworkInterceptor(rewriteCacheControlInterceptor)
+                            .addInterceptor(httpLoggingInterceptor)
+                            .connectTimeout(30, TimeUnit.SECONDS)
+                            .build();
+
                 }
-                Cache cache = new Cache(fileCache, 1024 * 1024 * 100);
-                //添加或者更改Header头信息
-                Interceptor rewriteCacheControlInterceptor = new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request();
-                        //无网络连接
-                        if (!NetUtil.isConnected(App.getContext())) {
-                            request = request.newBuilder().cacheControl(CacheControl.FORCE_CACHE).build();
-                        }
-
-                        Response response = chain.proceed(request);
-                        if (NetUtil.isConnected(App.getContext())) {
-                            //有网络时
-                            String cacheControl = request.cacheControl().toString();
-                            return response.newBuilder().header("Cache-Control", cacheControl).removeHeader("Prama").build();
-                        } else {
-                            //无网络时
-                            return response.newBuilder().header("Cache-Control", "public,only-if-cache," + CACHE_STALE_ESC).removeHeader("Prama").build();
-                        }
-
-                    }
-                };
-
-                okHttpClient = new OkHttpClient.Builder()
-                        .cache(cache)
-                        .addNetworkInterceptor(rewriteCacheControlInterceptor)
-                        .addInterceptor(rewriteCacheControlInterceptor)
-                        .connectTimeout(30, TimeUnit.SECONDS).build();
             }
         }
     }
@@ -120,17 +118,4 @@ public class RetrofitManager {
         return Server.BASE_URL;
     }
 
-    public Observable<User> login(String name, String password) {
-
-        Map<String, String> options = new HashMap<>();
-        options.put("cmd", "LoginCheck");
-        options.put("DeviceType", "3");
-        options.put("DeviceToken", "");
-
-        return service.login(name, password, options);
-    }
-
-    public Observable<User> update(User user) {
-        return service.update(user);
-    }
 }

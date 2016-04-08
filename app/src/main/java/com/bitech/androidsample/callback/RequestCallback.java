@@ -1,18 +1,41 @@
 package com.bitech.androidsample.callback;
 
+import android.util.Log;
+
+import com.bitech.androidsample.utils.Logger;
+
+import javax.inject.Inject;
+
 /**
- * <p>请求的回调</p>
- * Created on 2016/4/6 16:18.
+ * <p></p>
+ * Created on 2016/4/8 11:19.
  *
  * @author Lucy
  */
-public interface RequestCallback<T> {
+public class RequestCallback<T> implements IRequestCallback<T>{
 
-    void beforeRequest();
+    private static final Logger logger=Logger.getLogger();
 
-    void requestError(String msg);
+    @Override
+    public void beforeRequest() {
+        logger.i("-------------before http request-----------------");
+    }
 
-    void requestComplete();
+    @Override
+    public void requestError(String msg) {
+        logger.i("-------------http request error-----------------");
+        logger.i(msg);
+    }
 
-    void requestSucess(T data);
+    @Override
+    public void requestSucess(T data) {
+        logger.i("-------------http request success-----------------");
+        logger.i(data);
+    }
+
+    @Override
+    public void requestComplete() {
+        logger.i("-------------http request complete-----------------");
+
+    }
 }

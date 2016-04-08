@@ -3,6 +3,8 @@ package com.bitech.androidsample;
 import android.content.Context;
 
 import com.bitech.androidsample.http.manager.RetrofitManager;
+import com.bitech.androidsample.http.service.Service;
+import com.bitech.androidsample.utils.Logger;
 
 import javax.inject.Singleton;
 
@@ -18,10 +20,12 @@ import dagger.Component;
  *
  * @author Lucy
  */
+@Singleton
 @Component(modules = AppModule.class)
 public interface AppComponent {
 
     Context context();
+    //网络访问的接口
+    Service providerApiService();
 
-    RetrofitManager retrofitManager();
 }

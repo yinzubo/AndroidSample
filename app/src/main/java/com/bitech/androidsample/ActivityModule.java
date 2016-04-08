@@ -21,6 +21,7 @@ public class ActivityModule {
     }
 
     @Provides
+    @ActivityScope
     Activity providerActivity(){
         return activity;
     }

@@ -12,6 +12,7 @@ import dagger.Component;
  *
  * @author Lucy
  */
+@ActivityScope
 @Component(dependencies = AppComponent.class,modules = ActivityModule.class)
 public interface ActivityComponent {
 

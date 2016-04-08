@@ -20,7 +20,7 @@ import rx.Observable;
 public interface Service {
 
     @GET("/User.ashx")
-    Observable<User> login(@Query("name")String name, @Query("password")String password,@QueryMap Map<String ,String> options);
+    Observable<User> login(@Query("name")String name, @Query("password")String password);
 
     @POST("/update")
     Observable<User> update(@Body User user);
