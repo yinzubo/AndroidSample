@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import com.anthonycr.grant.PermissionsManager;
 import com.bitech.androidsample.ActivityComponent;
 import com.bitech.androidsample.ActivityModule;
 import com.bitech.androidsample.BuildConfig;
@@ -140,6 +142,13 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
             intent.putExtras(bundle);
         }
         startActivity(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //使用PermissionManager对权限的申请管理
+        PermissionsManager.getInstance().notifyPermissionsChange(permissions,grantResults);
     }
 
     @Override
