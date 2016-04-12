@@ -37,7 +37,7 @@ import butterknife.ButterKnife;
 
 public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
-    public static final Logger logger= Logger.getLogger();
+    public static final Logger logger = Logger.getLogger();
 
     private int contentViewId;
     private boolean isSlidr;//是否开启滑动关闭
@@ -50,7 +50,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppManager.getInstance().addActivity(this);
-        App.getRefWatcher().watch(this);//监测Activity运行时是否发生内存泄漏
+         App.getRefWatcher().watch(this);//监测Activity运行时是否发生内存泄漏
 
         if (getClass().isAnnotationPresent(ActivityInject.class)) {
             ActivityInject annotation = getClass().getAnnotation(ActivityInject.class);
@@ -64,10 +64,10 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         }
 
         //是否开启苛责模式
-/*        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
-        }*/
+        }
 
         logger.i("设置contentViewId:" + contentViewId);
         setContentView(contentViewId);
@@ -148,7 +148,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         //使用PermissionManager对权限的申请管理
-        PermissionsManager.getInstance().notifyPermissionsChange(permissions,grantResults);
+        PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults);
     }
 
     @Override

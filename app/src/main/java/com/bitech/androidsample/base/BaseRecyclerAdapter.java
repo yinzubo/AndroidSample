@@ -2,6 +2,7 @@ package com.bitech.androidsample.base;
 
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
@@ -13,23 +14,29 @@ import android.widget.AdapterView;
 
 import com.bitech.androidsample.R;
 import com.bitech.androidsample.callback.OnItemClickListener;
+import com.bitech.androidsample.utils.Logger;
 
 import java.util.List;
 
 /**
- * <p></p>
+ * <p>RecyclerView.Adapter的封装
+ * 默认不显示页脚
+ * 默认线性管理
+ * </p>
  * Created on 2016/4/11 15:06.
  *
  * @author Lucy
  */
 public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHolder> {
 
+    public static final Logger logger = Logger.getLogger();
+
     protected Context context;
     protected List<T> datas;//数据
     protected RecyclerView.LayoutManager layoutManager;
     protected boolean useAnimation;//是否使用动画
 
-    protected boolean showFooter;//是否显示页脚
+    protected boolean showFooter = false;//是否显示页脚
 
     public static final int TYPE_HEADER = 1;
     public static final int TYPE_ITEM = 2;
@@ -37,15 +44,15 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
 
     protected OnItemClickListener onItemClickListener;
 
-    public BaseRecyclerAdapter(Context context, List<T> datas) {
+    protected BaseRecyclerAdapter(Context context, List<T> datas) {
         this(context, datas, true);
     }
 
-    public BaseRecyclerAdapter(Context context, List<T> datas, boolean useAnimation) {
-        this(context, datas, useAnimation, null);
+    protected BaseRecyclerAdapter(Context context, List<T> datas, boolean useAnimation) {
+        this(context, datas, useAnimation, new LinearLayoutManager(context));
     }
 
-    public BaseRecyclerAdapter(Context context, List<T> datas, boolean useAnimation, RecyclerView.LayoutManager layoutManager) {
+    protected BaseRecyclerAdapter(Context context, List<T> datas, boolean useAnimation, RecyclerView.LayoutManager layoutManager) {
         this.context = context;
         this.datas = datas;
         this.useAnimation = useAnimation;
@@ -55,11 +62,12 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
     @Override
     public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == TYPE_FOOTER) {
-            return new BaseRecyclerViewHolder(context, LayoutInflater.from(context).inflate(R.layout.recycler_item_footer, null));
+            return new BaseRecyclerViewHolder(context,
+                    LayoutInflater.from(context).inflate(R.layout.recycler_item_footer, parent, false));
         } else {
-            BaseRecyclerViewHolder viewHolder = new BaseRecyclerViewHolder(context,
-                    LayoutInflater.from(context).inflate(getItemLayoutId(), null));
-            return viewHolder;
+            return new BaseRecyclerViewHolder(context,
+                    LayoutInflater.from(context).inflate(getItemLayoutId(), parent, false));
+
         }
 
     }
@@ -71,7 +79,7 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
                 if (layoutManager instanceof StaggeredGridLayoutManager) {
                     if (((StaggeredGridLayoutManager) layoutManager).getSpanCount() != 1) {
                         StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams) holder.itemView.getLayoutParams();
-                        layoutParams.setFullSpan(true);
+                        layoutParams.setFullSpan(true);//item使用整个宽度或高度
                     }
                     //网格布局
                 } else if (layoutManager instanceof GridLayoutManager) {
@@ -81,22 +89,23 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
                         throw new RuntimeException("网格布局列数大于1时应该继承SpanSizeLookup时处理底部加载时布局占满一行。");
                     }
                 }
-            } else {
-                bindData(holder, position, datas.get(position));
-                if (useAnimation) {
-                    setAnimation(holder.itemView, position);
-                }
-                //点击
-                if (onItemClickListener != null) {
-                    holder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onItemClickListener.onItemClickListener(v, position);
-                        }
-                    });
-                }
+            }
+        } else {
+            bindData(holder, position, datas.get(position));
+            if (useAnimation) {
+                setAnimation(holder.itemView, position);
+            }
+            //点击
+            if (onItemClickListener != null) {
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onItemClickListener.onItemClickListener(v, position);
+                    }
+                });
             }
         }
+
     }
 
     @Override
@@ -139,7 +148,7 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<BaseRe
 
     public void add(int position, T item) {
         datas.add(position, item);
-        notifyItemInserted(position);
+        notifyItemInserted(position);//使用动画效果时需要使用这种方法
     }
 
     public void delete(int position) {
