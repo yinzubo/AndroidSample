@@ -21,46 +21,47 @@ public class SSlSocketFactory {
 
     /**
      * 返回SSLContent
-     * */
-    public static SSLContext getSocketFactory(InputStream... certificates){
+     */
+    public static SSLContext getSocketFactory(InputStream... certificates) {
 
         try {
-            CertificateFactory certificateFactory=CertificateFactory.getInstance("X.509");
-            KeyStore keyStore=KeyStore.getInstance(KeyStore.getDefaultType());
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null);
-            int index=0;
-            for(InputStream certificate:certificates){
-                String certificateAlias=Integer.toString(index++);
-                keyStore.setCertificateEntry(certificateAlias,certificateFactory.generateCertificate(certificate));
+            int index = 0;
+            for (InputStream certificate : certificates) {
+                String certificateAlias = Integer.toString(index++);
+                keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));
 
                 try {
-                    if(certificate!=null){
+                    if (certificate != null) {
                         certificate.close();
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
             //SSL TSL协议
-            SSLContext sslContext=SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("TLS");
 
-            TrustManagerFactory trustManagerFactory=TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
-            sslContext.init(null,trustManagerFactory.getTrustManagers(),new SecureRandom());
-            return sslContext;
+            sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
+
 
             /**
              *双向正式认证，即在客户端设置key,服务端设置cert,进行认证
              *keytool可以设置密钥，导出cert公钥
              * */
-            KeyStore clientKeyStore= KeyStore.getInstance(KeyStore.getDefaultType());
-            clientKeyStore.load(null,"passowrd".toCharArray());
-            KeyManagerFactory keyManagerFactory=KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            keyManagerFactory.init(clientKeyStore,"password".toCharArray());
-            sslContext.init(keyManagerFactory.getKeyManagers(),trustManagerFactory.getTrustManagers(),new SecureRandom());
+/*            KeyStore clientKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            clientKeyStore.load(null, "passowrd".toCharArray());
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(clientKeyStore, "password".toCharArray());
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+           */
+            return sslContext;
 
-
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
