@@ -2,6 +2,7 @@ package com.bitech.androidsample.http.manager;
 
 import com.bitech.androidsample.app.App;
 import com.bitech.androidsample.http.Interceptor.HttpLoggingInterceptor;
+import com.bitech.androidsample.http.converter.CustomConverterFactory;
 import com.bitech.androidsample.http.server.Server;
 import com.bitech.androidsample.http.service.Service;
 import com.bitech.androidsample.utils.Logger;
@@ -54,7 +55,7 @@ public class RetrofitManager {
         initOkHttpClient();
         //使用Okhttp 以及rxjava做回调
         Retrofit retrofit = new Retrofit.Builder().baseUrl(getHost()).client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(CustomConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create()).build();
         //实例化Service对象
         service = retrofit.create(Service.class);
@@ -99,6 +100,7 @@ public class RetrofitManager {
                             }
                         }
                     };
+                    //设置日志
                     HttpLoggingInterceptor httpLoggingInterceptor=new HttpLoggingInterceptor();
                     httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 

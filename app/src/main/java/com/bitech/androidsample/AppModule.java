@@ -30,7 +30,7 @@ public class AppModule {
 
     @Provides
     @Singleton
-    Context providerContext(){
+    Context context(){
         return app;
     }
 

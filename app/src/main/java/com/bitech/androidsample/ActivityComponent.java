@@ -18,5 +18,6 @@ public interface ActivityComponent {
 
     Activity activity();
 
+    //设置注解到MainActivity中
     void inject(MainActivity mainActivity);
 }

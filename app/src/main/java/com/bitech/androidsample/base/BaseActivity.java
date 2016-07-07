@@ -167,6 +167,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     //使用Dagger2的设置
+    //与Activity相关联，其生命周期就是Activity
     protected ActivityComponent getActivityComponent() {
         return DaggerActivityComponent.builder()
                 .activityModule(new ActivityModule(this))

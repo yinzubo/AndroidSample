@@ -35,7 +35,7 @@ public class App extends Application {
         return mInstance;
     }
 
-
+    //设置Dagger，与Application相关联，生命周期与其一样
     public static AppComponent getAppComponent() {
         return DaggerAppComponent.builder().appModule(new AppModule(mInstance)).build();
     }

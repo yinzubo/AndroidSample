@@ -6,7 +6,9 @@ import java.util.Map;
 
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 import rx.Observable;
@@ -24,4 +26,8 @@ public interface Service {
 
     @POST("/update")
     Observable<User> update(@Body User user);
+
+    @Multipart
+    @POST("/upload")
+    Observable<String> upload();
 }
